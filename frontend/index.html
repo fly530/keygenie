@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="KeyGenie - 安全的密碼生成器" />
+  <meta name="theme-color" content="#0F172A" />
+  <meta name="app-version" content="1.0.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KeyGenie" />
+  <title>KeyGenie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <script>
+    // 检测是否为 Capacitor 环境
+    const isCapacitor = window.Capacitor !== undefined;
+    
+    // 注册 Service Worker（仅在 Web 环境且非开发模式）
+    if (!isCapacitor && 'serviceWorker' in navigator) {
+      // 检测是否为开发模式（localhost 或 127.0.0.1）
+      const isDevelopment = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '';
+
+      if (isDevelopment) {
+        // 开发模式下，取消注册所有 Service Worker
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => {
+            registration.unregister().then(() => {
+              console.log('开发模式：Service Worker 已取消注册');
+            });
+          });
+        });
+      } else {
+        // 生产模式下注册 Service Worker
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+              console.log('Service Worker 注册成功:', registration.scope);
+
+              // 检查是否有更新
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // 新版本已安装，提示用户刷新
+                    console.log('Service Worker 新版本已安装，请刷新页面');
+                  }
+                });
+              });
+
+              // 定期检查更新
+              setInterval(() => {
+                registration.update();
+              }, 60000); // 每分钟检查一次
+            })
+            .catch((error) => {
+              console.log('Service Worker 注册失败:', error);
+            });
+        });
+
+        // 监听 Service Worker 更新
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+      }
+    }
+  </script>
+</body>
+
+</html>

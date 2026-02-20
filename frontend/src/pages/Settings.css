@@ -1,0 +1,72 @@
+.settings-page {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--bg-primary);
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+/* 语言选择器下拉箭头样式 */
+.language-select-picker .rs-picker-toggle {
+  position: relative;
+  padding-right: 30px !important;
+}
+
+/* 隐藏清除按钮 */
+.language-select-picker .rs-picker-toggle-clean {
+  display: none !important;
+}
+
+/* 隐藏 rsuite 默认的 caret 图标和所有可能的箭头元素 */
+.language-select-picker .rs-picker-toggle-caret,
+.language-select-picker .rs-picker-toggle .rs-picker-toggle-caret-icon,
+.language-select-picker .rs-picker-toggle svg,
+.language-select-picker .rs-picker-toggle .rs-icon,
+.language-select-picker .rs-picker-toggle i {
+  display: none !important;
+}
+
+/* 添加自定义下拉箭头 - 使用更高优先级覆盖 theme.css */
+.language-select-picker .rs-picker-toggle.rs-btn::after,
+.language-select-picker.rs-picker-default .rs-picker-toggle::after {
+  content: '' !important;
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: inline-block !important;
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 5px solid transparent !important;
+  border-right: 5px solid transparent !important;
+  border-top: 6px solid var(--text-primary) !important;
+  transition: transform 0.2s !important;
+  pointer-events: none !important;
+}
+
+.language-select-picker.rs-picker-toggle-active .rs-picker-toggle::after,
+.language-select-picker.rs-picker-default.rs-picker-toggle-active .rs-picker-toggle::after {
+  transform: translateY(-50%) rotate(180deg) !important;
+}
+
+@media (max-width: 768px) {
+  .settings-page {
+    padding: 0 10px;
+  }
+}
+

@@ -1,0 +1,14 @@
+# Environment and secrets
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Dependencies and build
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+
+# OS and editors
+.DS_Store
+.idea
+*.log

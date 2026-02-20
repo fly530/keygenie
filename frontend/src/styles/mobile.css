@@ -1,0 +1,208 @@
+/* 移动端样式优化 */
+
+/* 确保 body 和 html 支持安全区域 */
+html {
+  /* 支持安全区域变量 */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+body {
+  /* 确保 body 也支持安全区域 */
+  padding: 0;
+  /* 在 Capacitor 环境下，内容可以延伸到状态栏下方 */
+  /* 优先使用 env(safe-area-inset-top)，如果不可用则使用 CSS 变量 */
+  padding-top: env(safe-area-inset-top, var(--safe-area-inset-top, var(--status-bar-height, 0px)));
+}
+
+/* 触摸优化 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* 按钮和链接触摸优化 */
+button, a, [role="button"] {
+  min-height: 44px; /* iOS 推荐的最小触摸目标 */
+  min-width: 44px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 输入框优化 */
+input, textarea, select {
+  font-size: 16px; /* 防止 iOS 自动缩放 */
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+/* 滚动优化 */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* 底部导航栏移动端优化 */
+.navbar-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--glass-border);
+}
+
+/* 主内容区域底部间距（为底部导航栏留出空间） */
+.main-content {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* 移动端特定样式 */
+@media (max-width: 768px) {
+  /* 调整字体大小 */
+  body {
+    font-size: 14px;
+  }
+
+  /* 卡片间距优化 */
+  .glass-card {
+    margin-bottom: 15px;
+    padding: 15px;
+  }
+
+  /* 按钮组优化 */
+  .rsuite-button-group {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* 输入框优化 */
+  .rsuite-input {
+    font-size: 16px;
+  }
+
+  /* 选择器优化 */
+  .rsuite-picker {
+    font-size: 16px;
+  }
+
+  /* 面板标题优化 */
+  .rsuite-panel-heading {
+    font-size: 16px;
+    padding: 12px 15px;
+  }
+
+  /* 面板内容优化 */
+  .rsuite-panel-body {
+    padding: 15px;
+  }
+
+  /* 导航栏优化 */
+  .navbar-top {
+    padding: 10px 15px;
+    /* 确保在移动端有足够的状态栏间距 */
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    height: calc(60px + env(safe-area-inset-top, 0px));
+    min-height: calc(60px + env(safe-area-inset-top, 0px));
+  }
+
+  /* 底部导航项优化 */
+  .bottom-nav-item {
+    padding: 10px 15px;
+    font-size: 12px;
+  }
+
+  /* 触摸反馈 */
+  .rsuite-button:active,
+  .bottom-nav-item:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+    transition: all 0.1s ease;
+  }
+
+  /* 列表项优化 */
+  .rsuite-list-item {
+    min-height: 48px;
+    padding: 12px 15px;
+  }
+
+  /* 模态框优化 */
+  .rsuite-modal {
+    margin: 20px;
+    max-width: calc(100% - 40px);
+  }
+
+  /* 消息提示优化 */
+  .rsuite-message {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+}
+
+/* 小屏幕优化 */
+@media (max-width: 480px) {
+  /* 进一步减小间距 */
+  .glass-card {
+    margin-bottom: 10px;
+    padding: 12px;
+  }
+
+  /* 按钮文字大小 */
+  .rsuite-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  /* 标题优化 */
+  h1 {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  h3 {
+    font-size: 16px;
+  }
+}
+
+/* 横屏优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .navbar-bottom {
+    padding-bottom: 5px;
+  }
+
+  .main-content {
+    padding-bottom: 70px;
+  }
+}
+
+/* 安全区域适配（iOS） */
+@supports (padding: max(0px)) {
+  .navbar-bottom {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .main-content {
+    padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+  }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2) {
+  .icon-glow {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* 动画优化（减少动画以提高性能） */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

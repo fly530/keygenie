@@ -1,0 +1,21 @@
+services:
+  keygenie-frontend:
+    image: nginx:alpine
+    container_name: keygenie-frontend
+    restart: unless-stopped
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro # 將建置好的 dist 目錄掛載到 Nginx 的預設目錄
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+
+    networks:
+      - web_proxy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        #限制最多保留 3 個10MB日誌檔案
+
+networks:
+  web_proxy:
+    external: true

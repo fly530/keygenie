@@ -1,0 +1,592 @@
+:root {
+  /* 主背景 - 沉穩、不分散注意力 */
+  --bg-primary: #0F172A;
+
+  /* 卡片區塊 - 建立層次感，讓資料看起來像存在保險箱裡 */
+  --bg-surface: #1E293B;
+
+  /* 輸入框背景 - 深灰藍色，比背景稍微亮一點，增加對比 */
+  --input-bg: #334155;
+
+  /* 主文字 - 高對比、清晰可讀，降低焦慮 */
+  --text-primary: #F8FAFC;
+
+  /* 次要文字 - 提高亮度以增加對比度 */
+  --text-secondary: #CBD5E1;
+
+  /* 圖標顏色 - 淺色 */
+  --icon-color: #F8FAFC;
+
+  /* 安全指標 - 傳達「加密安全」的信號 */
+  --accent-safe: #22C55E;
+
+  /* 安全綠（焦點狀態） */
+  --accent-focus: #34D399;
+
+  /* 警示色 - 用於「主密碼無法找回」的提醒，比紅色溫和但具警示性 */
+  --warning: #F59E0B;
+
+  /* 圓角 - 友善且受到保護的視覺暗示 */
+  --radius: 12px;
+  --radius-lg: 16px;
+
+  /* 玻璃擬態效果 - 稍微降低透明度以提高易讀性，帶輕微漸層與內陰影 */
+  --glass-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.92) 0%, rgba(30, 41, 59, 0.78) 100%);
+  --glass-bg-fallback: rgba(30, 41, 59, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --glass-inner-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+
+  /* 列表卡片樣式變數 */
+  --list-item-bg: rgba(51, 65, 85, 0.5);
+  --list-item-hover-bg: rgba(51, 65, 85, 0.8);
+  --list-item-border: rgba(255, 255, 255, 0.05);
+
+  /* 導航欄高度 */
+  --navbar-top-height: 60px;
+  --navbar-bottom-height: 62px;
+
+  /* RSuite 元件 CSS 變數覆蓋 */
+  --rs-picker-toggle-bg: var(--input-bg);
+  --rs-input-bg: var(--input-bg);
+  --rs-modal-bg: var(--glass-bg);
+}
+
+/* ===== 全域基礎樣式 ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* 預留滾動條空間，標題列與內容寬度一致、不因滾動條出現而縮短 */
+  scrollbar-gutter: stable;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+}
+
+body {
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+}
+
+/* ===== 玻璃擬態卡片 ===== */
+.glass-card {
+  background: var(--glass-bg-fallback);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5), var(--glass-inner-shadow);
+}
+
+/* ===== 圖標發光效果 ===== */
+.icon-glow {
+  color: var(--text-primary);
+  filter: drop-shadow(0 0 4px var(--accent-safe));
+  transition: filter 0.3s ease;
+}
+
+.icon-glow:hover {
+  filter: drop-shadow(0 0 8px var(--accent-safe));
+}
+
+/* ===== RSuite 按鈕樣式 ===== */
+.rs-btn-primary {
+  background-color: var(--accent-safe);
+  border-color: var(--accent-safe);
+  border-radius: var(--radius);
+  /* 手機觸控優化 */
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.rs-btn-primary:hover,
+.rs-btn-primary:focus {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+/* 所有按鈕通用觸控優化與按下微互動 */
+.rs-btn,
+button {
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.rs-btn:active,
+button:active {
+  transform: scale(0.97);
+}
+
+/* ===== RSuite 輸入框樣式 ===== */
+.rs-input {
+  background-color: var(--input-bg);
+  border: 1px solid #334155;
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  letter-spacing: normal;
+}
+
+.rs-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.rs-input:focus {
+  outline: none;
+  border-color: var(--accent-focus);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+/* 密碼輸入框 - placeholder 保持正常間距 */
+.rs-input[type="password"] {
+  letter-spacing: normal;
+  font-family: monospace;
+}
+
+/* 密碼輸入框有值時才增加字元間距 */
+.rs-input[type="password"]:not(:placeholder-shown) {
+  letter-spacing: 0.15em;
+}
+
+/* Textarea 樣式 */
+.rs-input[as="textarea"] {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ===== Input Group 樣式 ===== */
+.rs-input-group {
+  border-radius: var(--radius);
+  background-color: var(--input-bg);
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+
+.rs-input-group .rs-input {
+  background-color: transparent;
+  border: none;
+}
+
+.rs-input-group-addon {
+  background-color: var(--input-bg);
+  border: none;
+  color: var(--text-secondary);
+}
+
+/* ===== RSuite 卡片樣式 ===== */
+.rs-panel {
+  background-color: var(--bg-surface);
+  border-color: var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+/* ===== RSuite 標籤頁樣式 ===== */
+.rs-tabs {
+  background-color: transparent;
+}
+
+/* 非作用中 Tab 文字 - 淺灰色 */
+.rs-nav-item {
+  color: #a4a9b3 !important;
+}
+
+/* 作用中 Tab 文字 - 綠色 */
+.rs-nav-item-active,
+.rs-nav-item[data-active="true"] {
+  color: var(--accent-safe) !important;
+}
+
+/* 作用中底線 - 綠色 */
+.rs-nav-bar {
+  background-color: var(--accent-safe) !important;
+}
+
+/* 作用中 Tab 的 ::before 偽元素底線 - 綠色 */
+.rs-nav-item-active::before,
+.rs-nav-item[data-active="true"]::before {
+  background-color: var(--accent-safe) !important;
+}
+
+/* ===== RSuite Picker 下拉選單樣式 ===== */
+/* 選單容器 */
+.rs-picker-menu,
+.rs-dropdown-menu,
+.rs-picker-popup {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Toggle 按鈕（輸入框） */
+.rs-picker-toggle.rs-btn,
+.rs-picker-default .rs-picker-toggle {
+  background-color: var(--input-bg);
+  border: 1px solid #334155;
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.rs-picker-toggle.rs-btn:hover,
+.rs-picker-toggle.rs-btn:focus,
+.rs-picker-default .rs-picker-toggle:hover,
+.rs-picker-default.rs-picker-toggle-active .rs-picker-toggle,
+.rs-picker-default.rs-picker-toggle-focus .rs-picker-toggle {
+  background-color: var(--input-bg);
+  border-color: var(--accent-focus);
+}
+
+/* 移除偽元素邊框 */
+.rs-picker-toggle::before,
+.rs-picker-toggle::after {
+  display: none;
+}
+
+/* Toggle 內文字顏色 */
+.rs-picker-toggle-placeholder,
+.rs-picker-toggle-value,
+.rs-picker-toggle-textbox {
+  color: var(--text-primary);
+}
+
+/* Tag Wrapper - 確保透明背景 */
+.rs-picker-tag-wrapper {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* Tags 樣式 */
+.rs-picker-tag-wrapper .rs-tag {
+  background-color: var(--bg-surface);
+  color: var(--accent-safe);
+  border: 1px solid var(--glass-border);
+}
+
+.rs-picker-tag-wrapper .rs-tag .rs-tag-icon-close {
+  color: var(--text-secondary);
+}
+
+/* 清除按鈕 */
+.rs-picker-toggle-clean {
+  color: var(--text-secondary);
+}
+
+/* 啟用狀態 */
+.rs-picker-toggle-active {
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+  border-color: var(--accent-safe);
+}
+
+/* 搜尋框 */
+.rs-picker-search-bar {
+  background-color: transparent;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.rs-picker-search-bar .rs-input {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+/* ===== Picker 選項樣式 ===== */
+/* 一般選項 */
+.rs-picker-menu .rs-picker-select-menu-item {
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.rs-picker-menu .rs-picker-select-menu-item:hover,
+.rs-picker-menu .rs-picker-select-menu-item.rs-picker-select-menu-item-focus,
+.rs-picker-menu .rs-picker-select-menu-item.rs-picker-select-menu-item-active {
+  background-color: var(--list-item-hover-bg);
+  color: var(--accent-safe);
+}
+
+/* Checkbox 選項 */
+.rs-check-item {
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.rs-check-item:hover,
+.rs-check-item:focus,
+.rs-check-item.rs-check-item-focus {
+  background-color: var(--list-item-hover-bg);
+  color: var(--accent-safe);
+}
+
+.rs-check-item .rs-checkbox-checker label,
+.rs-check-item .rs-checkbox-wrapper {
+  color: var(--text-primary);
+}
+
+.rs-check-item[aria-selected="true"] .rs-checkbox-checker label {
+  color: var(--accent-safe);
+  font-weight: 600;
+}
+
+/* Checkbox 控制項樣式 */
+.rs-checkbox-checker .rs-checkbox-control {
+  background-color: transparent;
+  border-color: var(--text-secondary);
+}
+
+.rs-checkbox-checked .rs-checkbox-control,
+.rs-checkbox-indeterminate .rs-checkbox-control {
+  background-color: var(--accent-safe);
+  border-color: var(--accent-safe);
+  background-image: none;
+}
+
+.rs-checkbox-checked .rs-checkbox-inner::before {
+  border-color: #fff;
+}
+
+/* ===== 深色 Picker Popup 樣式（強制覆蓋） ===== */
+.dark-picker-popup.rs-picker-popup,
+.dark-picker-popup .rs-picker-menu,
+.dark-picker-popup .rs-picker-select-menu {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.dark-picker-popup .rs-picker-select-menu-item,
+.dark-picker-popup .rs-check-item {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+
+.dark-picker-popup .rs-picker-select-menu-item:hover,
+.dark-picker-popup .rs-picker-select-menu-item.rs-picker-select-menu-item-focus,
+.dark-picker-popup .rs-check-item:hover,
+.dark-picker-popup .rs-check-item:focus {
+  background-color: var(--list-item-hover-bg) !important;
+  color: var(--accent-safe) !important;
+}
+
+.dark-picker-popup .rs-check-item .rs-checkbox-checker label {
+  color: var(--text-primary) !important;
+}
+
+.dark-picker-popup .rs-check-item[aria-selected="true"] .rs-checkbox-checker label {
+  color: var(--accent-safe) !important;
+  font-weight: 600 !important;
+}
+
+
+/* ===== RSuite 模態框樣式（強制覆蓋） ===== */
+.rs-modal,
+.rs-modal-sm,
+.rs-modal-md,
+.rs-modal-lg {
+  background-color: transparent !important;
+}
+
+.rs-modal-content {
+  background-color: transparent !important;
+  border-color: var(--glass-border) !important;
+}
+
+.rs-modal-dialog {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--glass-shadow) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.rs-modal-header,
+.rs-modal-body,
+.rs-modal-footer {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+.rs-modal-title {
+  color: var(--text-primary) !important;
+}
+
+/* Modal 內的輸入框強制深色 */
+.rs-modal .rs-input,
+.rs-modal .rs-input-group {
+  background-color: var(--input-bg) !important;
+  border-color: #334155 !important;
+  color: var(--text-primary) !important;
+}
+
+.rs-modal .rs-input::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+/* ===== 歷史記錄項目樣式 ===== */
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: var(--list-item-bg);
+  border: 1px solid var(--list-item-border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  gap: 16px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.history-item:hover {
+  background-color: var(--list-item-hover-bg);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-item-left {
+  flex-shrink: 0;
+}
+
+.history-site-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent-safe), #10B981);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+}
+
+.history-item-mid {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.history-item-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.history-account {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-dot {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+}
+
+.history-date {
+  opacity: 0.8;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.history-item-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== 全局滚动条样式 ===== */
+/* 窄滚动条 - 适用于所有页面 */
+* {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Webkit 浏览器 (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 每頁預佔滾動條空間（由 scrollbar-gutter: stable 達成），標題列不因滾動條縮短 */
+html, body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}

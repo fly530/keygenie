@@ -1,0 +1,228 @@
+.favorites-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: var(--bg-primary);
+  /* 確保分頁內容不會被底部導航遮擋 */
+  padding-bottom: 20px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+
+/* Tabs 水平滾動 - 手機版支援 */
+/* Tabs 水平滾動 - 修復擠壓問題、垂直對齊、藥丸形狀 */
+.favorites-tabs-nav.rs-nav {
+  align-items: center;
+}
+
+.nav-wrapper .rs-nav-item {
+  flex-shrink: 0 !important;
+  white-space: nowrap;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px;
+  padding: 8px 14px !important;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* 作用中 Tab：藥丸形狀背景 */
+.nav-wrapper .favorites-tabs-nav .rs-nav-item-active,
+.nav-wrapper .favorites-tabs-nav .rs-nav-item[data-active="true"] {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  color: var(--accent-safe) !important;
+}
+
+/* 隱藏預設底線，改由藥丸背景表示選中 */
+.nav-wrapper .favorites-tabs-nav .rs-nav-item::before,
+.nav-wrapper .favorites-tabs-nav ~ .rs-nav-bar,
+.nav-wrapper .rs-nav-bar {
+  display: none !important;
+}
+
+/* ALL 與群組名稱文字上下對齊：統一結構與行高 */
+.nav-wrapper .favorites-tabs-nav .rs-nav-item .tab-label,
+.nav-wrapper .favorites-tabs-nav .rs-nav-item .long-press-title {
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+  font-size: inherit;
+  min-height: 1.4em;
+}
+
+/* 確保 LongPressTitle 佔滿整個 Tab 區域以接收點擊 */
+.long-press-title {
+  width: 100%;
+  justify-content: center;
+}
+
+/* 確保分頁內容容器樣式 */
+.nav-wrapper {
+  /* 使用窄滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.nav-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.nav-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-wrapper::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.nav-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+
+/* Add Button Tab Alignment */
+.add-tab-btn-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.add-tab-btn-wrapper:hover {
+  color: var(--accent-safe);
+}
+
+/* 禁用 Add Tab 的預設樣式影響 (因為我們把它設為 disabled 來防止切換) */
+.rs-nav-item-disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+/* Favorite List Animation */
+.favorite-card {
+  transition: box-shadow 0.2s ease;
+}
+
+.favorite-card:hover {
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* 模态框样式 - 針對 favorites-modal class */
+.favorites-modal .rs-modal-dialog {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  /* 嘗試修復模糊問題 */
+  -webkit-font-smoothing: antialiased;
+  transform: translateZ(0);
+}
+
+/* 修復輸入框模糊問題 - 強制不透明背景並提升層級 */
+.favorites-modal .rs-input {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.favorites-modal .rs-modal-content {
+  background: transparent;
+  box-shadow: none;
+}
+
+.favorites-modal .rs-modal-header,
+.favorites-modal .rs-modal-body,
+.favorites-modal .rs-modal-footer {
+  background: transparent;
+  border-color: var(--glass-border);
+  padding: 20px;
+}
+
+/* 模態框標籤樣式 */
+.modal-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 取消按钮对比度调整 - 使用更明顯的背景色 */
+.favorites-modal .rs-btn-subtle {
+  background-color: #475569;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.favorites-modal .rs-btn-subtle:hover {
+  background-color: #64748B;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 修復 RSuite List.Item 的黑色背景問題 */
+.rs-list-item {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+/* 確保拖動時的樣式正常 */
+.rs-list-item.rs-list-item-dragging {
+  background-color: transparent !important;
+}
+
+/* 左右箭頭按鈕樣式 - 去除點擊時的底色 */
+.scroll-btn {
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--text-secondary) !important;
+}
+
+.scroll-btn:hover {
+  background-color: transparent !important;
+  color: var(--accent-safe) !important;
+}
+
+.scroll-btn:active,
+.scroll-btn:focus {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.scroll-btn .rs-icon {
+  font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .favorites-page {
+    padding: 0 10px;
+    padding-bottom: 80px;
+    /* 增加底部空間給導航欄 */
+  }
+}
