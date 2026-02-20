@@ -44,7 +44,7 @@
 
   /* 導航欄高度 */
   --navbar-top-height: 60px;
-  --navbar-bottom-height: 62px;
+  --navbar-bottom-height: 50px;
 
   /* RSuite 元件 CSS 變數覆蓋 */
   --rs-picker-toggle-bg: var(--input-bg);

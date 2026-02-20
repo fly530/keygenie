@@ -476,7 +476,7 @@ function Settings() {
         </h2>
         <p style={{ margin: 0, lineHeight: '1.8', color: 'var(--text-primary)' }}>
           <a
-            href="https://github.com/YOUR_USERNAME/keygenie"
+            href="https://github.com/fly530/keygenie"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: 'var(--accent-safe)', textDecoration: 'none', fontWeight: 500 }}
