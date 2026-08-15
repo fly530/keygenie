@@ -7,11 +7,15 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // 將 React 相關庫分離
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          // 將 RSuite UI 庫分離
-          'rsuite-vendor': ['rsuite']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router-dom/')) {
+              return 'react-vendor';
+            }
+            if (id.includes('rsuite')) {
+              return 'rsuite-vendor';
+            }
+          }
         }
       }
     },
