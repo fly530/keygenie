@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Nav,
@@ -30,7 +30,8 @@ import {
   checkLoginStatus,
   cleanupDeletedItems,
   backgroundSync,
-  processPendingSyncQueue
+  processPendingSyncQueue,
+  bulkUpdateFavorites
 } from '../services/syncService';
 import { useLanguage } from '../hooks/useLanguage';
 import { useConfirmModal } from '../hooks/useConfirmModal';
@@ -104,7 +105,16 @@ function Favorites() {
   const [editAccount, setEditAccount] = useState('');
   const [editGroupId, setEditGroupId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [tabBeforeSearch, setTabBeforeSearch] = useState(null); // 記錄搜尋前的 Tab
+
+  // 搜尋字串防抖處理
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // 群組操作 Modal
   const [showGroupActionModal, setShowGroupActionModal] = useState(false);
@@ -313,26 +323,25 @@ function Favorites() {
     });
   };
 
-  const getFavoritesByGroup = (groupId) => {
-    const filtered = favorites.filter(f => f.groupId === groupId);
-    // 按 sortOrder 排序
-    return filtered.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  };
-
-  // 取得所有最愛並排序
-  const getAllFavoritesSorted = () => {
+  // 使用 useMemo 排序所有最愛
+  const sortedAllFavorites = useMemo(() => {
     return [...favorites].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  };
+  }, [favorites]);
 
-  // 搜尋過濾邏輯
-  const getFilteredFavorites = (favs) => {
-    if (!searchQuery.trim()) return favs;
-    const query = searchQuery.toLowerCase();
-    return favs.filter(f =>
+  // 搜尋過濾邏輯 (對全部已排序的最愛進行過濾，依賴防抖搜尋值)
+  const filteredAllFavorites = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return sortedAllFavorites;
+    const query = debouncedSearchQuery.toLowerCase();
+    return sortedAllFavorites.filter(f =>
       f.siteName.toLowerCase().includes(query) ||
       (f.account && f.account.toLowerCase().includes(query))
     );
-  };
+  }, [sortedAllFavorites, debouncedSearchQuery]);
+
+  // 取得特定群組內的最愛
+  const getFavoritesByGroup = useCallback((groupId) => {
+    return filteredAllFavorites.filter(f => f.groupId === groupId);
+  }, [filteredAllFavorites]);
 
   // 處理排序結束事件
   const handleSortEnd = async ({ oldIndex, newIndex }, currentFavorites) => {
@@ -343,22 +352,20 @@ function Favorites() {
 
     // 重新計算 sortOrder
     const updatedFavorites = newFavorites.map((fav, index) => ({
-      ...fav,
+      id: fav.id,
       sortOrder: index + 1
     }));
 
     // 更新本地狀態
     const allFavorites = favorites.map(f => {
       const updated = updatedFavorites.find(uf => uf.id === f.id);
-      return updated || f;
+      return updated ? { ...f, sortOrder: updated.sortOrder } : f;
     });
     setFavorites(allFavorites);
 
-    // 批次更新到後端
+    // 批次更新到後端 (只發送 1 次 API 請求)
     try {
-      for (const fav of updatedFavorites) {
-        await updateFavorite(fav.id, { sortOrder: fav.sortOrder });
-      }
+      await bulkUpdateFavorites(updatedFavorites);
       toaster.push(<Message showIcon type="success">排序已儲存</Message>, { placement: 'topCenter' });
     } catch (error) {
       console.error('儲存排序失敗:', error);
@@ -492,11 +499,11 @@ function Favorites() {
       <div style={{ marginTop: '20px' }}>
         {activeTab === 'ALL' && (
           <FavoriteTabContent
-            favorites={getFilteredFavorites(getAllFavoritesSorted())}
+            favorites={filteredAllFavorites}
             onEdit={handleEditFavorite}
             onDelete={handleDeleteFavorite}
             onClick={handleCardClick}
-            onSortEnd={(params) => handleSortEnd(params, getAllFavoritesSorted())}
+            onSortEnd={(params) => handleSortEnd(params, sortedAllFavorites)}
             emptyMessage={searchQuery ? '沒有找到符合的結果' : t('noFavorites')}
             formatDate={formatDate}
           />
@@ -507,7 +514,7 @@ function Favorites() {
             return (
               <FavoriteTabContent
                 key={group.id}
-                favorites={getFilteredFavorites(getFavoritesByGroup(group.id))}
+                favorites={getFavoritesByGroup(group.id)}
                 onEdit={handleEditFavorite}
                 onDelete={handleDeleteFavorite}
                 onClick={handleCardClick}

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Panel, SelectPicker, Button, Input, Message, useToaster, Toggle } from 'rsuite';
+import { Panel, SelectPicker, Button, Input, Message, useToaster, Toggle, Modal } from 'rsuite';
 import { CgShield, CgLock, CgBookmark, CgCopy, CgOptions, CgExport, CgImport, CgCloud, CgTrash } from 'react-icons/cg';
 import { useLanguage } from '../hooks/useLanguage';
 import { getAvailableLanguages } from '../utils/i18n';
@@ -24,6 +24,22 @@ function Settings() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometryType, setBiometryType] = useState(null);
   const [isLoadingBiometric, setIsLoadingBiometric] = useState(true);
+
+  // 自訂確認對話框狀態
+  const [confirmModal, setConfirmModal] = useState({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: null
+  });
+
+  const showConfirm = (title, description, onConfirm) => {
+    setConfirmModal({ open: true, title, description, onConfirm });
+  };
+
+  const closeConfirm = () => {
+    setConfirmModal(prev => ({ ...prev, open: false }));
+  };
 
   const languages = getAvailableLanguages();
   const isNative = Capacitor.isNativePlatform();
@@ -97,17 +113,8 @@ function Settings() {
   };
 
   useEffect(() => {
-    // 获取最后同步时间
-    const syncTime = lastSyncedAt || getLastSyncedAt();
-    setLastSyncTime(syncTime);
-    
-    // 定期更新同步时间
-    const interval = setInterval(() => {
-      const currentSyncTime = lastSyncedAt || getLastSyncedAt();
-      setLastSyncTime(currentSyncTime);
-    }, 1000);
-
-    return () => clearInterval(interval);
+    // 获取最后同步时间并隨 lastSyncedAt 狀態更新
+    setLastSyncTime(lastSyncedAt || getLastSyncedAt());
   }, [lastSyncedAt]);
 
   const formatSyncTime = (timestamp) => {
@@ -156,32 +163,36 @@ function Settings() {
     }
   };
 
-  // 导出数据
   // 清除本地數據並從 Supabase 重新同步，執行前須確認
-  const handleClearLocalData = async () => {
-    if (!window.confirm(t('clearLocalDataConfirm'))) return;
-    try {
-      const result = await clearLocalDataAndResync();
-      if (result.success) {
-        toaster.push(
-          <Message type="success" duration={3000}>
-            {t('clearLocalDataSuccess')}
-          </Message>,
-          { placement: 'topCenter' }
-        );
-        setLastSyncTime(getLastSyncedAt());
-      } else {
-        throw new Error(result.message);
+  const handleClearLocalData = () => {
+    showConfirm(
+      t('confirm') || '確認',
+      t('clearLocalDataConfirm') || '確定要清除所有本地緩存的數據並重新從雲端同步嗎？',
+      async () => {
+        try {
+          const result = await clearLocalDataAndResync();
+          if (result.success) {
+            toaster.push(
+              <Message type="success" duration={3000}>
+                {t('clearLocalDataSuccess')}
+              </Message>,
+              { placement: 'topCenter' }
+            );
+            setLastSyncTime(getLastSyncedAt());
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          console.error('Clear local data error:', error);
+          toaster.push(
+            <Message type="error" duration={3000}>
+              {t('clearLocalDataFailed')}
+            </Message>,
+            { placement: 'topCenter' }
+          );
+        }
       }
-    } catch (error) {
-      console.error('Clear local data error:', error);
-      toaster.push(
-        <Message type="error" duration={3000}>
-          {t('clearLocalDataFailed')}
-        </Message>,
-        { placement: 'topCenter' }
-      );
-    }
+    );
   };
 
   const handleExportData = () => {
@@ -229,28 +240,32 @@ function Settings() {
     reader.onload = (e) => {
       try {
         const jsonString = e.target.result;
-        if (window.confirm(t('importConfirm'))) {
-          const result = importData(jsonString);
-          if (result.success) {
-            toaster.push(
-              <Message type="success" duration={3000}>
-                {t('importSuccess')}
-              </Message>,
-              { placement: 'topCenter' }
-            );
-            // 重新加载页面以应用导入的数据
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          } else {
-            toaster.push(
-              <Message type="error" duration={3000}>
-                {t('importFailed')}: {result.message}
-              </Message>,
-              { placement: 'topCenter' }
-            );
+        showConfirm(
+          t('confirm') || '確認',
+          t('importConfirm') || '導入數據將會覆蓋當前所有數據，確定要繼續嗎？',
+          () => {
+            const result = importData(jsonString);
+            if (result.success) {
+              toaster.push(
+                <Message type="success" duration={3000}>
+                  {t('importSuccess')}
+                </Message>,
+                { placement: 'topCenter' }
+              );
+              // 重新加载页面以应用导入的数据
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else {
+              toaster.push(
+                <Message type="error" duration={3000}>
+                  {t('importFailed')}: {result.message}
+                </Message>,
+                { placement: 'topCenter' }
+              );
+            }
           }
-        }
+        );
       } catch (error) {
         toaster.push(
           <Message type="error" duration={3000}>
@@ -507,6 +522,30 @@ function Settings() {
           {t('submitReport')}
         </Button>
       </Panel>
+
+      {/* 統一的確認對話框 */}
+      <Modal open={confirmModal.open} onClose={closeConfirm} size="xs" className="favorites-modal" backdrop="static">
+        <Modal.Header>
+          <Modal.Title>{confirmModal.title}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ color: 'var(--text-primary)' }}>
+          {confirmModal.description}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeConfirm} appearance="subtle" style={{ backgroundColor: '#475569', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+            {t('cancel')}
+          </Button>
+          <Button
+            onClick={() => {
+              if (confirmModal.onConfirm) confirmModal.onConfirm();
+              closeConfirm();
+            }}
+            appearance="primary"
+          >
+            {t('confirm')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* 版本資訊 */}
       <div style={{

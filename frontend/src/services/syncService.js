@@ -400,6 +400,9 @@ export async function createFavorite(data) {
     isDeleted: false
   };
 
+  localData.favorites = [...favorites, newItem];
+  saveLocalData(localData);
+
   if (userId) {
     const { error } = await supabase.from('favorites').insert({
       id: newItem.id,
@@ -414,14 +417,17 @@ export async function createFavorite(data) {
     });
     if (error) {
       console.error('Supabase 新增 favorite 失敗:', error);
-      saveLocalData({ ...localData, favorites: [...favorites, newItem] });
       backgroundSync();
       return newItem;
     }
+    // 成功，更新同步時間，避免 fullSync
+    saveLastSyncedAt(now);
+    if (globalSyncState.setLastSyncedAt) {
+      globalSyncState.setLastSyncedAt(now);
+    }
+    return newItem;
   }
 
-  localData.favorites = [...favorites, newItem];
-  saveLocalData(localData);
   backgroundSync();
   return newItem;
 }
@@ -431,10 +437,11 @@ export async function updateFavorite(id, updates) {
   const index = localData.favorites.findIndex(f => f.id === id);
   if (index === -1) return null;
 
+  const now = new Date().toISOString();
   const updated = {
     ...localData.favorites[index],
     ...updates,
-    updatedAt: new Date().toISOString()
+    updatedAt: now
   };
   localData.favorites[index] = updated;
   saveLocalData(localData);
@@ -448,10 +455,60 @@ export async function updateFavorite(id, updates) {
       sort_order: updated.sortOrder ?? 0,
       updated_at: updated.updatedAt
     }).eq('id', id).eq('user_id', userId);
-    if (error) console.error('Supabase 更新 favorite 失敗:', error);
+    if (error) {
+      console.error('Supabase 更新 favorite 失敗:', error);
+      backgroundSync();
+      return updated;
+    }
+    // 成功，更新同步時間
+    saveLastSyncedAt(now);
+    if (globalSyncState.setLastSyncedAt) {
+      globalSyncState.setLastSyncedAt(now);
+    }
+    return updated;
   }
   backgroundSync();
   return updated;
+}
+
+// 批次更新我的最愛排序 (大幅減少排序時的 API 呼叫)
+export async function bulkUpdateFavorites(updatesArray) {
+  const localData = getLocalData();
+  const now = new Date().toISOString();
+
+  updatesArray.forEach(upd => {
+    const index = localData.favorites.findIndex(f => f.id === upd.id);
+    if (index !== -1) {
+      localData.favorites[index] = {
+        ...localData.favorites[index],
+        ...upd,
+        updatedAt: now
+      };
+    }
+  });
+  saveLocalData(localData);
+
+  const userId = await getCurrentUserId();
+  if (userId) {
+    const rows = updatesArray.map(upd => {
+      const item = localData.favorites.find(f => f.id === upd.id);
+      return favoriteToRow(item, userId);
+    });
+
+    const { error } = await supabase.from('favorites').upsert(rows);
+    if (error) {
+      console.error('Supabase 批次更新 favorite 失敗:', error);
+      backgroundSync();
+      return;
+    }
+    // 成功，更新同步時間，避免 fullSync
+    saveLastSyncedAt(now);
+    if (globalSyncState.setLastSyncedAt) {
+      globalSyncState.setLastSyncedAt(now);
+    }
+    return;
+  }
+  backgroundSync();
 }
 
 export async function deleteFavorite(id) {
@@ -467,7 +524,17 @@ export async function deleteFavorite(id) {
   if (userId) {
     const { error } = await supabase.from('favorites').update({ is_deleted: true, updated_at: now })
       .eq('id', id).eq('user_id', userId);
-    if (error) console.error('Supabase 軟刪除 favorite 失敗:', error);
+    if (error) {
+      console.error('Supabase 軟刪除 favorite 失敗:', error);
+      backgroundSync();
+      return;
+    }
+    // 成功，更新同步時間
+    saveLastSyncedAt(now);
+    if (globalSyncState.setLastSyncedAt) {
+      globalSyncState.setLastSyncedAt(now);
+    }
+    return;
   }
   backgroundSync();
 }
@@ -493,6 +560,9 @@ export async function createGroup(group) {
     isDeleted: false
   };
 
+  localData.groups = [...groups, newGroup];
+  saveLocalData(localData);
+
   if (userId) {
     const { error } = await supabase.from('groups').insert({
       id: newGroup.id,
@@ -503,11 +573,19 @@ export async function createGroup(group) {
       updated_at: now,
       is_deleted: false
     });
-    if (error) console.error('Supabase 新增 group 失敗:', error);
+    if (error) {
+      console.error('Supabase 新增 group 失敗:', error);
+      backgroundSync();
+      return newGroup;
+    }
+    // 成功，更新同步時間
+    saveLastSyncedAt(now);
+    if (globalSyncState.setLastSyncedAt) {
+      globalSyncState.setLastSyncedAt(now);
+    }
+    return newGroup;
   }
 
-  localData.groups = [...groups, newGroup];
-  saveLocalData(localData);
   backgroundSync();
   return newGroup;
 }
@@ -520,7 +598,8 @@ export async function updateGroup(id, updates) {
   const localData = getLocalData();
   const index = localData.groups.findIndex(g => g.id === id);
   if (index === -1) return null;
-  localData.groups[index] = { ...localData.groups[index], ...updates, updatedAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  localData.groups[index] = { ...localData.groups[index], ...updates, updatedAt: now };
   saveLocalData(localData);
 
   const userId = await getCurrentUserId();
@@ -531,7 +610,17 @@ export async function updateGroup(id, updates) {
     row.updated_at = localData.groups[index].updatedAt;
     if (Object.keys(row).length > 0) {
       const { error } = await supabase.from('groups').update(row).eq('id', id).eq('user_id', userId);
-      if (error) console.error('Supabase 更新 group 失敗:', error);
+      if (error) {
+        console.error('Supabase 更新 group 失敗:', error);
+        backgroundSync();
+        return localData.groups[index];
+      }
+      // 成功，更新同步時間
+      saveLastSyncedAt(now);
+      if (globalSyncState.setLastSyncedAt) {
+        globalSyncState.setLastSyncedAt(now);
+      }
+      return localData.groups[index];
     }
   }
   backgroundSync();
@@ -553,10 +642,19 @@ export async function deleteGroup(id) {
 
   const userId = await getCurrentUserId();
   if (userId) {
-    await supabase.from('groups').update({ is_deleted: true, updated_at: now }).eq('id', id).eq('user_id', userId);
-    const favRows = localData.favorites.filter(f => f.groupId === 'default' && f.updatedAt === now);
-    for (const f of favRows) {
-      await supabase.from('favorites').update({ group_id: 'default', updated_at: now }).eq('id', f.id).eq('user_id', userId);
+    const { error: groupErr } = await supabase.from('groups').update({ is_deleted: true, updated_at: now }).eq('id', id).eq('user_id', userId);
+    if (groupErr) console.error('Supabase 刪除 group 失敗:', groupErr);
+
+    const { error: favErr } = await supabase.from('favorites').update({ group_id: 'default', updated_at: now }).eq('group_id', id).eq('user_id', userId);
+    if (favErr) console.error('Supabase 更新歸屬最愛失敗:', favErr);
+
+    if (!groupErr && !favErr) {
+      // 成功，更新同步時間，避免 fullSync
+      saveLastSyncedAt(now);
+      if (globalSyncState.setLastSyncedAt) {
+        globalSyncState.setLastSyncedAt(now);
+      }
+      return;
     }
   }
   backgroundSync();

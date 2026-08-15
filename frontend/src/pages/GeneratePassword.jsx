@@ -5,6 +5,7 @@ import { CgLock, CgCopy, CgCheck } from 'react-icons/cg';
 import { generatePassword, DeviceIncompatibleError } from '../utils/passwordGenerator';
 import { createFavorite, deleteFavorite, getLocalData } from '../services/syncService';
 import { useLanguage } from '../hooks/useLanguage';
+import { useConfirmModal } from '../hooks/useConfirmModal';
 import RecordListItem from '../components/RecordListItem';
 import PageHeader from '../components/PageHeader';
 import './GeneratePassword.css';
@@ -16,6 +17,7 @@ function GeneratePassword() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const toaster = useToaster();
+  const { confirmDelete, ConfirmModal } = useConfirmModal(t);
   const [siteName, setSiteName] = useState('');
   const [account, setAccount] = useState('');
   const [masterPassword, setMasterPassword] = useState('');
@@ -312,9 +314,9 @@ function GeneratePassword() {
               isFavorite={isFavorite(record)}
               onFavoriteClick={() => handleToggleFavorite(record)}
               onDeleteClick={() => {
-                if (window.confirm(t('deleteHistoryConfirm'))) {
+                confirmDelete(() => {
                   handleDeleteHistory(index);
-                }
+                }, t('confirm') || '確認', t('deleteHistoryConfirm') || '確定要刪除此歷史紀錄嗎？');
               }}
               onItemClick={() => {
                 setSiteName(record.siteName);
@@ -327,6 +329,8 @@ function GeneratePassword() {
           ))}
         </div>
       )}
+      {/* 歷史紀錄刪除確認對話框 */}
+      {ConfirmModal}
     </div>
   );
 }

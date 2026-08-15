@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { App as CapacitorApp } from '@capacitor/app';
 import App from './App';
 import { preloadHashWasm } from './utils/passwordGenerator';
 import { getCurrentLanguage, t } from './utils/i18n';
@@ -94,6 +95,25 @@ if (Capacitor.isNativePlatform()) {
       await SplashScreen.hide();
     } catch (error) {
       console.error('隐藏启动画面失败:', error);
+    }
+  });
+
+  // 監聽 Android 物理返回鍵
+  CapacitorApp.addListener('backButton', () => {
+    // 1. 如果有開啟的 RSuite Modal，先嘗試關閉它
+    const closeBtn = document.querySelector('.rs-modal-header-close') || 
+                     document.querySelector('.rs-modal-footer .rs-btn-subtle') ||
+                     document.querySelector('[role="dialog"] .rs-btn-subtle');
+    if (closeBtn) {
+      closeBtn.click();
+      return;
+    }
+
+    // 2. 判斷當前頁面路徑是否在首頁，若否則回上一頁，若是則退出 App
+    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+      window.history.back();
+    } else {
+      CapacitorApp.exitApp();
     }
   });
 }
