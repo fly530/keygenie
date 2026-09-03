@@ -1,0 +1,46 @@
+# CI（Continuous Integration）：只負責「build image + 推上 registry」
+# 不負責部署——部署交給跑在 k3s 裡的 Argo CD 自己去拉 Git 狀態同步
+name: Build and Push Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # 只有這些路徑改變時才觸發，避免改 README 也重新 build
+      - 'frontend/**'
+      - '.github/workflows/deploy.yml'
+
+env:
+  REGISTRY: ghcr.io
+  # github.repository 會自動變成 "使用者名稱/repo名稱"，例如 fly530/keygenie
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    # 用 GitHub 雲端提供的 runner，不是 self-hosted，跟你自己的伺服器完全無關
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # 要推 image 上 ghcr.io，需要這個權限
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN 是 GitHub 自動提供的臨時 token，不用自己申請
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}

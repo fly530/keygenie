@@ -21,10 +21,10 @@ spec:
     spec:
       containers:
         - name: keygenie-frontend
-          # 剛用 docker build 出來、再匯入 k3s containerd 的 image
-          image: keygenie-frontend:practice
-          # IfNotPresent：本機已經有這個 image 就直接用，不去外部 registry 拉
-          imagePullPolicy: IfNotPresent
+          # 由 GitHub Actions build 完自動推上 ghcr.io，不再是本機手動 import
+          image: ghcr.io/fly530/keygenie:latest
+          # Always：每次都去 registry 檢查有沒有新版（因為 tag 固定用 latest）
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           # 資源限制：requests 是預留量（排程時保證有），limits 是上限（超過會被限流/砍掉）
