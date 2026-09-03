@@ -8,7 +8,7 @@ metadata:
     app: keygenie-frontend
 spec:
   # 要跑幾個一模一樣的 Pod（複本），用來做基本的高可用/負載分散
-  replicas: 2
+  replicas: 3
   # 用這組 label 去找「哪些 Pod 屬於我管」
   selector:
     matchLabels:
