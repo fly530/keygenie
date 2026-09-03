@@ -1,0 +1,37 @@
+# Deployment：負責管理 Pod 的建立、數量、更新方式
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keygenie-frontend
+  namespace: keygenie
+  labels:
+    app: keygenie-frontend
+spec:
+  # 要跑幾個一模一樣的 Pod（複本），用來做基本的高可用/負載分散
+  replicas: 2
+  # 用這組 label 去找「哪些 Pod 屬於我管」
+  selector:
+    matchLabels:
+      app: keygenie-frontend
+  template:
+    metadata:
+      # Pod 身上實際貼的 label，要跟上面 selector 對得起來
+      labels:
+        app: keygenie-frontend
+    spec:
+      containers:
+        - name: keygenie-frontend
+          # 剛用 docker build 出來、再匯入 k3s containerd 的 image
+          image: keygenie-frontend:practice
+          # IfNotPresent：本機已經有這個 image 就直接用，不去外部 registry 拉
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          # 資源限制：requests 是預留量（排程時保證有），limits 是上限（超過會被限流/砍掉）
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

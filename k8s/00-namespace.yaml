@@ -1,0 +1,6 @@
+# 建立一個獨立的 namespace，把這個練習專案的所有資源
+# （Deployment、Service、Ingress...）都放在裡面，跟其他東西隔開
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keygenie

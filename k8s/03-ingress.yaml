@@ -1,0 +1,24 @@
+# Ingress：讓叢集外部（例如區網其他電腦）可以透過 HTTP 存取裡面的 Service
+# k3s 內建 Traefik 當 ingress controller，所以不用另外裝
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keygenie-frontend
+  namespace: keygenie
+spec:
+  # 指定用 k3s 內建的 traefik 來處理這個 Ingress
+  ingressClassName: traefik
+  rules:
+    # 只有 Host header 是 keygenie.local 的請求才會轉進來
+    # （沒有真實網域，測試時要手動帶 Host header，或改本機 hosts 檔）
+    - host: keygenie.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                # 轉發到上面定義的 Service
+                name: keygenie-frontend
+                port:
+                  number: 80
